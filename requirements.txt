@@ -1,0 +1,9 @@
+gradio>=4.0.0
+torch
+torchaudio
+audiocraft
+scipy
+librosa
+soundfile
+numpy<2
+transformers<4.40.0
