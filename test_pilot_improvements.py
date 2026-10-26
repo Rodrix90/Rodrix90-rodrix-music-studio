@@ -503,7 +503,194 @@ def test_suite():
     assert "display:none" in html_content  # Inicialmente oculto
     print("   -> ÉXITO: Interfaz index.html incluye la sección 'Soporte UDIO', botones de Gmail y mailto, y restricción por is_admin.")
 
-    print("\n=== TODAS LAS VERIFICACIONES FINALES RESULTARON EXITOSAS (7/7) ===")
+    # ---------------------------------------------------------------------
+    # 8. TEST: Articulación de Batería, Bajo y Selección Épica de Piano de Oración
+    # ---------------------------------------------------------------------
+    print("\n[8] Probando articulaciones rítmicas detalladas y selección de Piano de Oración...")
+    
+    # 8.1 Verificaciones en index.html
+    assert 'name="hihat_mode"' in html_content
+    assert 'value="8th"' in html_content
+    assert 'value="4th"' in html_content
+    assert 'value="16th"' in html_content
+    assert 'id="chkCrashToms"' in html_content
+    assert 'id="chkSplashRide"' in html_content
+    assert 'id="chkTomGrooves"' in html_content
+    assert 'id="chkBassSlap"' in html_content
+    assert 'id="chkBassPickup"' in html_content
+    assert 'updateHiHatInStylePrompt' in html_content
+    # Verificaciones de Piano de Oración (Roland MKS-20, Galaxy DX, Motif XS)
+    assert 'name="prayer_piano_type"' in html_content
+    assert 'value="mks20"' in html_content
+    assert 'value="galaxydx"' in html_content
+    assert 'value="motifxs"' in html_content
+    assert 'value="acustico"' in html_content
+    assert 'PRAYER_PIANO_SOUNDS' in html_content
+    assert 'data-gear="roland mks-20 e-piano 2"' in html_content
+    assert 'data-gear="galaxy dx"' in html_content
+    assert 'data-gear="yamaha motif xs"' in html_content
+    print("   -> ÉXITO: Interfaz index.html contiene selectores de Hi-Hat, toms/crashes, bajo slap/pick-up y los 4 tipos de Piano de Oración (MKS-20, Galaxy DX, Motif XS, Acústico).")
+
+    # 8.2 Verificaciones de enrich_style y run_transform_task en app.py
+    from app import run_transform_task
+    articulation_payloads = []
+    async def mock_art_post(client_self, url, json=None, headers=None, **kwargs):
+        if json:
+            articulation_payloads.append(json)
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.text = '{"workId": "test_mock_work_id"}'
+        mock_resp.json.return_value = {"workId": "test_mock_work_id"}
+        return mock_resp
+
+    async def mock_art_get(client_self, url, headers=None, **kwargs):
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.text = '{"status": "SUCCESS"}'
+        mock_resp.json.return_value = {
+            "status": "SUCCESS",
+            "data": [{
+                "id": "trk_1", "title": "Test", "audio_url": "https://example.com/audio.mp3",
+                "status": "SUCCESS", "lyrics": "Test"
+            }]
+        }
+        return mock_resp
+
+    async def run_rhythm_articulation_test():
+        with patch("httpx.AsyncClient.post", new=mock_art_post), \
+             patch("httpx.AsyncClient.get", new=mock_art_get):
+            
+            # Caso A: Preset Pentecostal con Hi-Hat en Negras (1 golpe por tempo) y Slap
+            TASKS["test_hihat_4th"] = {"id": "test_hihat_4th", "status": "IN_PROGRESS", "logs": ""}
+            await run_transform_task(
+                task_id="test_hihat_4th",
+                style="coro pentecostal, hi-hat en negras, crashes y redobles, bajo slap",
+                title="Test HiHat 4th",
+                lyrics="Alabanza...",
+                audio_content=None,
+                audio_filename=None,
+                ignore_audio=True,
+                include_lyrics=True,
+                bypass_copyright=False,
+                exclude_styles="",
+                vocal_gender="male",
+                weirdness=25,
+                style_influence=50,
+                audio_influence=25,
+                model="chirp-v5",
+                pronunciation="",
+                obfuscate=False
+            )
+            sent_style_a = articulation_payloads[-1]["style"].lower()
+            assert "one stroke per beat" in sent_style_a or "quarter-note" in sent_style_a
+            assert "slap and pop" in sent_style_a
+            assert "crash cymbals" in sent_style_a
+            
+            # Caso B: Preset Pentecostal con Hi-Hat en Corcheas (2 golpes por tempo) y Pick-up
+            TASKS["test_hihat_8th"] = {"id": "test_hihat_8th", "status": "IN_PROGRESS", "logs": ""}
+            await run_transform_task(
+                task_id="test_hihat_8th",
+                style="coro pentecostal, hi-hat en corcheas, bajo pick-up, grooves en toms",
+                title="Test HiHat 8th",
+                lyrics="Alabanza...",
+                audio_content=None,
+                audio_filename=None,
+                ignore_audio=True,
+                include_lyrics=True,
+                bypass_copyright=False,
+                exclude_styles="",
+                vocal_gender="male",
+                weirdness=25,
+                style_influence=50,
+                audio_influence=25,
+                model="chirp-v5",
+                pronunciation="",
+                obfuscate=False
+            )
+            sent_style_b = articulation_payloads[-1]["style"].lower()
+            assert "eighth notes" in sent_style_b or "two strokes per beat" in sent_style_b
+            assert "pick-up" in sent_style_b or "passing tone" in sent_style_b
+            assert "tom groove" in sent_style_b
+
+            # Caso C: Preset Piano de Oración con Roland MKS-20 Elec Piano 2 (Keyscape)
+            TASKS["test_mks20"] = {"id": "test_mks20", "status": "IN_PROGRESS", "logs": ""}
+            await run_transform_task(
+                task_id="test_mks20",
+                style="piano de oracion, roland mks-20 preset elec piano 2",
+                title="Test MKS20",
+                lyrics="Oracion...",
+                audio_content=None,
+                audio_filename=None,
+                ignore_audio=True,
+                include_lyrics=False,
+                bypass_copyright=False,
+                exclude_styles="",
+                vocal_gender="male",
+                weirdness=25,
+                style_influence=50,
+                audio_influence=25,
+                model="chirp-v5",
+                pronunciation="",
+                obfuscate=False
+            )
+            sent_style_c = articulation_payloads[-1]["style"].lower()
+            assert "mks-20" in sent_style_c
+            assert "elec piano 2" in sent_style_c or "chorus" in sent_style_c or "keyscape" in sent_style_c
+
+            # Caso D: Preset Piano de Oración con Galaxy DX
+            TASKS["test_galaxydx"] = {"id": "test_galaxydx", "status": "IN_PROGRESS", "logs": ""}
+            await run_transform_task(
+                task_id="test_galaxydx",
+                style="piano de oracion, galaxy dx worship piano",
+                title="Test Galaxy DX",
+                lyrics="Oracion...",
+                audio_content=None,
+                audio_filename=None,
+                ignore_audio=True,
+                include_lyrics=False,
+                bypass_copyright=False,
+                exclude_styles="",
+                vocal_gender="male",
+                weirdness=25,
+                style_influence=50,
+                audio_influence=25,
+                model="chirp-v5",
+                pronunciation="",
+                obfuscate=False
+            )
+            sent_style_d = articulation_payloads[-1]["style"].lower()
+            assert "galaxy dx" in sent_style_d
+            assert "crystal bells" in sent_style_d or "celestial pad" in sent_style_d
+
+            # Caso E: Preset Piano de Oración con Yamaha Motif XS
+            TASKS["test_motifxs"] = {"id": "test_motifxs", "status": "IN_PROGRESS", "logs": ""}
+            await run_transform_task(
+                task_id="test_motifxs",
+                style="piano de oracion, yamaha motif xs",
+                title="Test Motif XS",
+                lyrics="Oracion...",
+                audio_content=None,
+                audio_filename=None,
+                ignore_audio=True,
+                include_lyrics=False,
+                bypass_copyright=False,
+                exclude_styles="",
+                vocal_gender="male",
+                weirdness=25,
+                style_influence=50,
+                audio_influence=25,
+                model="chirp-v5",
+                pronunciation="",
+                obfuscate=False
+            )
+            sent_style_e = articulation_payloads[-1]["style"].lower()
+            assert "motif xs" in sent_style_e
+            assert "power grand" in sent_style_e or "choir pad" in sent_style_e or "hall reverb" in sent_style_e
+            
+    asyncio.run(run_rhythm_articulation_test())
+    print("   -> ÉXITO: Los estilos y tareas de transformación enriquecen e interpretan con fidelidad las subdivisiones de Hi-Hat, adornos slap/pick-up y los 4 pianos de oración (MKS-20 Keyscape, Galaxy DX, Motif XS, Acústico).")
+
+    print("\n=== TODAS LAS VERIFICACIONES FINALES RESULTARON EXITOSAS (8/8) ===")
 
 if __name__ == "__main__":
     test_suite()
