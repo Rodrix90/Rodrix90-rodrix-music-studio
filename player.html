@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Walkman Premium Player</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050505;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.5);
+            --accent-cyan: #00f0ff;
+            --accent-purple: #8a2be2;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.1) 0%, transparent 70%);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 30px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            padding: 0 50px 50px;
+            gap: 60px;
+            align-items: center;
+            justify-content: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* --- SONY WM-FX32 WALKMAN REPLICA (FOTO REAL) --- */
+        .walkman-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .walkman {
+            width: 500px;
+            height: 350px;
+            background-image: url('walkman.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: 10px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #111;
+        }
+
+        /* Controles flotantes encima de la foto */
+        .walkman-controls {
+            position: absolute;
+            top: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+        }
+
+        .w-btn {
+            background: #111;
+            border: 2px solid #333;
+            color: #888;
+            padding: 8px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.8), inset 0 2px 2px rgba(255,255,255,0.1);
+            transition: all 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .w-btn:hover {
+            background: #222;
+        }
+
+        .w-btn:active, .w-btn.active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.8), inset 0 2px 2px rgba(0,0,0,0.5);
+        }
+
+        .w-btn.w-play.active {
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.4), inset 0 2px 2px rgba(0,0,0,0.5);
+        }
+
+        .w-btn.w-stop:active, .w-btn.w-stop.active {
+            color: #ff3366;
+            border-color: #ff3366;
+            box-shadow: 0 0 10px rgba(255, 51, 102, 0.4), inset 0 2px 2px rgba(0,0,0,0.5);
+        }
+
+        /* CENTER: Cassette Window Overlay */
+        .cassette-window-container {
+            /* Ajusta estos valores si la ventana no cuadra exactamente con la foto */
+            width: 250px;
+            height: 140px;
+            position: absolute;
+            top: 50%;
+            left: 55%;
+            transform: translate(-50%, -40%); /* Ajuste fino para la foto */
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        /* The Cassette inside */
+        .cassette-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cassette-sticker {
+            width: 90%;
+            height: 45px;
+            background: rgba(212, 212, 212, 0.9);
+            position: absolute;
+            top: 5px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px;
+            box-sizing: border-box;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .cassette-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: #111;
+            font-family: 'Share Tech Mono', monospace;
+            text-transform: uppercase;
+            width: 70%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cassette-cover {
+            width: 35px;
+            height: 35px;
+            object-fit: cover;
+            border: 2px solid #333;
+            border-radius: 2px;
+        }
+        
+        .spool-area {
+            width: 180px;
+            height: 50px;
+            background: rgba(0,0,0,0.5); /* Semitransparente para que se vea la foto debajo si es necesario */
+            border-radius: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            box-sizing: border-box;
+            position: absolute;
+            top: 55px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        /* Engranajes y cinta */
+        .tape-reel {
+            position: absolute;
+            background: #332b2b;
+            border-radius: 50%;
+            border: 1px solid #111;
+            z-index: 1;
+        }
+        
+        .tape-left { width: 70px; height: 70px; left: -10px; top: -10px; transition: all 0.5s; }
+        .tape-right { width: 40px; height: 40px; right: 5px; top: 5px; transition: all 0.5s; }
+
+        .spool-container {
+            position: relative;
+            width: 32px;
+            height: 32px;
+            z-index: 5;
+        }
+
+        .spool {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 5px rgba(0,0,0,0.8);
+        }
+
+        .spool-inner { width: 14px; height: 14px; background: #111; border-radius: 50%; z-index: 2; }
+        .spool-tooth { position: absolute; width: 4px; height: 100%; background: #fff; }
+        .spool-tooth::after { content:''; position: absolute; top: -2px; left: 0; width: 100%; height: 5px; background: #111; }
+        .spool-tooth::before { content:''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 5px; background: #111; }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .playing .spool { animation: spin 2s linear infinite; }
+
+        /* --- CONTROLES Y PROGRESO --- */
+        .progress-container {
+            width: 100%;
+            margin-top: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar-bg {
+            flex: 1;
+            height: 6px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            border-radius: 3px;
+            width: 0%;
+            position: relative;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+        }
+
+        /* --- KARAOKE SECTION --- */
+        .lyrics-container {
+            flex: 1;
+            height: 60vh;
+            overflow: hidden;
+            position: relative;
+            padding: 20px 40px;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+        }
+
+        .lyrics-content {
+            font-size: 32px;
+            line-height: 1.6;
+            font-weight: 800;
+            color: rgba(255,255,255,0.15);
+            text-align: left;
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            padding: 50% 0; 
+            white-space: pre-wrap;
+        }
+
+        .lyrics-content .line {
+            margin-bottom: 20px;
+            transition: color 0.3s ease, transform 0.3s ease, text-shadow 0.3s ease;
+        }
+
+        .lyrics-content .line.active {
+            color: var(--text-primary);
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+            transform: scale(1.02);
+        }
+        
+        .lyrics-content .line.instruction {
+            color: var(--accent-purple);
+            font-size: 20px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .blur-bg {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: -1;
+            opacity: 0.15;
+            filter: blur(80px);
+            background-size: cover;
+            background-position: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="blur-bg" id="blurBg"></div>
+
+    <div class="header">
+        <div class="header-title">Rodrix Music Creator <span style="font-size: 12px; color: var(--text-secondary); vertical-align: middle;">Retro Edition</span></div>
+        <button onclick="window.close()" style="background:transparent; border:none; color:var(--text-secondary); cursor:pointer; font-size:24px;">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <div class="main-container">
+        <!-- WALKMAN SECTION -->
+        <div class="walkman-container">
+            
+            <div class="walkman" id="cassetteObj">
+                
+                <div class="walkman-controls">
+                    <button class="w-btn w-play" id="btnPlay" onclick="togglePlay()"><i class="fa-solid fa-play"></i> PLAY</button>
+                    <button class="w-btn w-stop" id="btnStop" onclick="stopPlay()"><i class="fa-solid fa-stop"></i> STOP</button>
+                </div>
+                
+                <div class="cassette-window-container">
+                    
+                    <!-- Cassette Inside -->
+                    <div class="cassette-inner">
+                        <div class="cassette-sticker">
+                            <div class="cassette-title" id="songTitle">Cargando...</div>
+                            <img src="" id="vinylImage" class="cassette-cover">
+                        </div>
+                        
+                        <!-- Spools and Tape -->
+                        <div class="spool-area">
+                            <div class="tape-reel tape-left" id="tapeLeft"></div>
+                            <div class="tape-reel tape-right" id="tapeRight"></div>
+                            
+                            <div class="spool-container">
+                                <div class="spool">
+                                    <div class="spool-tooth"></div>
+                                    <div class="spool-tooth" style="transform: rotate(60deg);"></div>
+                                    <div class="spool-tooth" style="transform: rotate(120deg);"></div>
+                                    <div class="spool-inner"></div>
+                                </div>
+                            </div>
+                            <div class="spool-container">
+                                <div class="spool">
+                                    <div class="spool-tooth"></div>
+                                    <div class="spool-tooth" style="transform: rotate(60deg);"></div>
+                                    <div class="spool-tooth" style="transform: rotate(120deg);"></div>
+                                    <div class="spool-inner"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            
+        </div>
+
+        <!-- KARAOKE SECTION -->
+        <div class="lyrics-container">
+            <div class="lyrics-content" id="lyricsContent">
+                <!-- Lyrics lines will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <audio id="audioEngine"></audio>
+
+    <script>
+        const audio = document.getElementById('audioEngine');
+        const btnPlay = document.getElementById('btnPlay');
+        const btnStop = document.getElementById('btnStop');
+        const cassetteObj = document.getElementById('cassetteObj');
+        const tapeLeft = document.getElementById('tapeLeft');
+        const tapeRight = document.getElementById('tapeRight');
+        
+        const progressBarFill = document.getElementById('progressBarFill');
+        const currentTimeEl = document.getElementById('currentTime');
+        const totalTimeEl = document.getElementById('totalTime');
+        const lyricsContent = document.getElementById('lyricsContent');
+        const blurBg = document.getElementById('blurBg');
+
+        let isPlaying = false;
+        let linesElements = [];
+        let totalLines = 0;
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "00:00";
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+        }
+
+        // Initialize from localStorage
+        function initPlayer() {
+            const dataStr = localStorage.getItem('currentPlayerData');
+            if (!dataStr) {
+                document.getElementById('songTitle').innerText = "No Data";
+                return;
+            }
+            
+            const data = JSON.parse(dataStr);
+            document.getElementById('songTitle').innerText = data.title;
+            const imgUrl = data.image_url || 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=300';
+            
+            const vinylImg = document.getElementById('vinylImage');
+            if (vinylImg) vinylImg.src = imgUrl;
+            blurBg.style.backgroundImage = `url('${imgUrl}')`;
+            
+            audio.src = data.audio_url;
+
+            // Render Lyrics
+            const rawLyrics = data.lyrics || "Pista instrumental o sin letra proporcionada.";
+            const linesArray = rawLyrics.split('\n').filter(l => l.trim() !== '');
+            totalLines = linesArray.length;
+            
+            lyricsContent.innerHTML = '';
+            linesArray.forEach((lineText, index) => {
+                const lineDiv = document.createElement('div');
+                lineDiv.className = 'line';
+                lineDiv.innerText = lineText;
+                
+                // Detectar instrucciones
+                if (lineText.trim().startsWith('[') && lineText.trim().endsWith(']')) {
+                    lineDiv.classList.add('instruction');
+                }
+                
+                lyricsContent.appendChild(lineDiv);
+                linesElements.push(lineDiv);
+            });
+        }
+
+        function togglePlay() {
+            if (audio.paused) {
+                audio.play();
+            } else {
+                audio.pause();
+            }
+        }
+        
+        function stopPlay() {
+            audio.pause();
+            audio.currentTime = 0;
+            btnStop.classList.add('active');
+            setTimeout(() => btnStop.classList.remove('active'), 200);
+        }
+
+        audio.addEventListener('play', () => {
+            btnPlay.classList.add('active');
+            cassetteObj.classList.add('playing');
+            isPlaying = true;
+        });
+
+        audio.addEventListener('pause', () => {
+            btnPlay.classList.remove('active');
+            cassetteObj.classList.remove('playing');
+            isPlaying = false;
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            totalTimeEl.innerText = formatTime(audio.duration);
+        });
+
+        audio.addEventListener('timeupdate', () => {
+            const current = audio.currentTime;
+            const dur = audio.duration || 1;
+            currentTimeEl.innerText = formatTime(current);
+            const progressPct = current / dur;
+            progressBarFill.style.width = (progressPct * 100) + '%';
+            
+            // Tape reel animation logic
+            // Left reel goes from 90px to 30px
+            // Right reel goes from 30px to 90px
+            const leftSize = 90 - (progressPct * 60);
+            const rightSize = 30 + (progressPct * 60);
+            
+            tapeLeft.style.width = leftSize + 'px';
+            tapeLeft.style.height = leftSize + 'px';
+            // Adjust position slightly to keep centered-ish
+            tapeLeft.style.left = (-15 + (progressPct * 30)) + 'px';
+            tapeLeft.style.top = (-18 + (progressPct * 30)) + 'px';
+            
+            tapeRight.style.width = rightSize + 'px';
+            tapeRight.style.height = rightSize + 'px';
+            tapeRight.style.right = (35 - (progressPct * 30)) + 'px';
+            tapeRight.style.top = (35 - (progressPct * 30)) + 'px';
+
+            // Karaoke Sync Logic
+            if (totalLines > 0 && dur > 0) {
+                let activeIndex = Math.floor(progressPct * totalLines);
+                if (activeIndex >= totalLines) activeIndex = totalLines - 1;
+
+                linesElements.forEach((el, idx) => {
+                    if (idx === activeIndex) {
+                        el.classList.add('active');
+                    } else {
+                        el.classList.remove('active');
+                    }
+                });
+
+                if (linesElements[activeIndex]) {
+                    const elOffset = linesElements[activeIndex].offsetTop;
+                    const halfScreen = lyricsContent.parentElement.clientHeight / 2;
+                    const translateY = -elOffset + halfScreen;
+                    lyricsContent.style.transform = `translateY(${translateY}px)`;
+                }
+            }
+        });
+
+        audio.addEventListener('ended', () => {
+            btnPlay.classList.remove('active');
+            batteryLed.classList.remove('on');
+            cassetteObj.classList.remove('playing');
+            isPlaying = false;
+            progressBarFill.style.width = '100%';
+        });
+
+        function seekAudio(e) {
+            const rect = document.getElementById('progressBarBg').getBoundingClientRect();
+            const pos = (e.clientX - rect.left) / rect.width;
+            audio.currentTime = pos * audio.duration;
+        }
+
+        // Start
+        initPlayer();
+    </script>
+</body>
+</html>
