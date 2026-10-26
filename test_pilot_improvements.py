@@ -442,6 +442,13 @@ def test_suite():
             assert "snare 2-4" in style_pente
             assert "kick 1-3" in style_pente
             assert "hit-hat" in style_pente or "hi-hat" in style_pente
+            # Verificación de batería al frente y bien marcada:
+            assert "upfront" in style_pente or "al frente" in style_pente or "front of the mix" in style_pente
+            # Verificación de bajo eléctrico real y cero synth bass:
+            assert "electric bass" in style_pente or "bajo" in style_pente
+            assert "zero synth bass" in style_pente
+            # Verificación de exclusión de afro-gospel bias:
+            assert "no black gospel" in style_pente or "no afro gospel" in style_pente or "no soul" in style_pente
 
     asyncio.run(run_family_tests())
     print("   -> ÉXITO: Las 3 familias y los presets especiales respetan instrumentos, tempo propio y exclusiones del usuario.")
